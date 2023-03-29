@@ -33,6 +33,7 @@ function Settings(svg) {
   };
   this.racketSpeed = 8;
   this.startCountdown = 3;
+  this.countdown = this.startCountdown;
   this.ballSpeed_X = randomBallDirection_X(7);
   this.ballSpeed_Y = randomBallDirection_Y(-4, 4);
   this.ballActualSpeed_X = this.ballSpeed_X;
@@ -163,6 +164,23 @@ function drawSvgElements() {
     settings.svg.append(field);
   }
   drawField()
+  //Draw start countdown
+  function drawStartCountdown() {
+    const w = settings.svg.getAttributeNS(null, 'width');
+    const h = settings.svg.getAttributeNS(null, 'height');
+    const font = '"Orbitron", sans-serif';
+    const startCountdown = document.createElementNS(svgNS, 'text');
+    settings.svg.append(startCountdown);
+    startCountdown.setAttributeNS(null, 'id', 'countdown');
+    startCountdown.setAttributeNS(null, 'x', w / 2);
+    startCountdown.setAttributeNS(null, 'y', h / 2);
+    startCountdown.setAttributeNS(null, 'text-anchor', 'middle');
+    startCountdown.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) * 2.5 + 'rem');
+    startCountdown.setAttributeNS(null, 'font-family', font);
+    startCountdown.setAttributeNS(null, 'fill', 'rgb(255, 255, 255)');
+    startCountdown.textContent = settings.countdown;
+  }
+  drawStartCountdown()
   //Draw rackets
   function drawRacket(player) {
     const field = document.getElementById('field');
@@ -204,6 +222,75 @@ function drawSvgElements() {
 drawSvgElements()
 
 
-document.getElementById('pong').addEventListener('click', function(e) {
-  console.log(e.clientX, e.clientY);
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
+const curryHandler = function(duration, fn) {
+  return () => startTimer(duration, fn);
+}; 
+const startBtnHandler = curryHandler(settings.startCountdown, startGame);
+document.getElementById('start_btn').addEventListener('click', startBtnHandler);
+
+document.addEventListener('keydown', keyDownHandler);
+document.addEventListener('keyup', keyUpHandler);
+
+const countdownSound = new Audio('http://www.pachd.com/a/button/button18.wav');
+const startGameSound = new Audio('http://www.superluigibros.com/downloads/sounds/SNES/SMRPG/wav/smrpg_battle_punch.wav');
+const wallHitSound = new Audio('http://web.mit.edu/sahughes/www/Sounds/m=100.mp3');
+const racketHitSound = new Audio('http://www.healthfreedomusa.org/downloads/iMovie.app/Contents/Resources/iMovie%20%2708%20Sound%20Effects/Golf%20Hit%201.mp3');
+const missSound = new Audio('http://www.sfu.ca/~johannac/IAT202%20Exercise3/hit.wav');
+const fanfareSound = new Audio('http://www.ringophone.com/mp3poly/15959.mp3');
+
+// function gameSoundInit(...args) {
+//   for (let arg of args) {
+//     arg.play();
+//     arg.pause();
+//   }
+// }
+
+function gameSound(item) {
+  item.currentTime = 0;
+  item.play();
+}
+
+function startGame() {
+  settings.playerScoreCounter_1 = 0;
+  settings.playerScoreCounter_2 = 0;
+  settings.isCanRacketMove = true;
+  moveBall(); // window.requestAnimationFrame(moveBall);
+}
+
+function startTimer(duration, fn) {
+  // gameSoundInit(countdownSound, startGameSound, wallHitSound, racketHitSound, missSound, fanfareSound);
+  document.getElementById('start_btn').removeEventListener('click', startBtnHandler);
+  if (!settings.isGameOver) {
+    const startCountdown = document.getElementById('countdown');                            
+    let timer = duration;
+    const intervalStartCountdown = setInterval(function () {
+      gameSound(countdownSound);
+      startCountdown.textContent = timer;
+      if (--timer < 0) {
+        clearInterval(intervalStartCountdown);
+        startCountdown.textContent = 'Start!';
+        const timerStartCountdown = setTimeout(() => {
+          gameSound(startGameSound);
+          startCountdown.textContent = '';
+          fn();
+          settings.isInitialStart = false;            
+          clearTimeout(timerStartCountdown);
+        }, 600)
+      }
+    }, 600);
+  }
+}
+
