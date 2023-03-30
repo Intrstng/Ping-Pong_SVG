@@ -14,9 +14,23 @@ body {
   transform: translate(-50%, -50%);
 }
 #start_btn {
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 #start_btn:hover {
-  transform: scale(1.02);
-  cursor: pointer;
+  fill: rgb(255, 217, 0);
+}
+#start_btn:active {
+  fill: rgba(135, 255, 80, 0.7);
+}
+svg text {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+          pointer-events: none;
+}
+svg text::selection {
+  background: none;
+  /* -webkit-tap-highlight-color:  rgba(255, 255, 255, 0); */
 }

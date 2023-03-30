@@ -35,8 +35,8 @@ function Settings(svg) {
   this.racketSpeed = 8;
   this.startCountdown = 3;
   this.countdown = this.startCountdown;
-  this.ballSpeed_X = randomBallDirection_X(7);
-  this.ballSpeed_Y = randomBallDirection_Y(-4, 4);
+  this.ballSpeed_X = 3//randomBallDirection_X(7);//7
+  this.ballSpeed_Y = 0//randomBallDirection_Y(-4, 4);
   this.ballActualSpeed_X = this.ballSpeed_X;
   this.ballActualSpeed_Y = this.ballSpeed_Y;
   this.playerScoreCounter_1 = 0;
@@ -61,16 +61,14 @@ function Settings(svg) {
       currentPos_Y: this.ballPositionStart_Y,
     };
   }
+  this.updateBall = function() {
+    this.ball.setAttributeNS(null, 'cx', this.ballCurrentPosition.currentPos_X);
+    this.ball.setAttributeNS(null, 'cy', this.ballCurrentPosition.currentPos_Y);
+  }
   this.update_1 = function() {
-    // this.ball.style.left = this.ballCurrentPosition.currentPos_X + 'px';
-    // this.ball.style.top = this.ballCurrentPosition.currentPos_Y + 'px';
-
     this.racket_1.setAttributeNS(null, 'y', this.racketPlayer1_actualPosY);
   };
   this.update_2 = function() {
-    // this.ball.style.left = this.ballCurrentPosition.currentPos_X + 'px';
-    // this.ball.style.top = this.ballCurrentPosition.currentPos_Y + 'px';
-
     this.racket_2.setAttributeNS(null, 'y', this.racketPlayer2_actualPosY);
   };
 }
@@ -152,7 +150,7 @@ function drawSvgElements() {
       const colon = document.createElementNS(svgNS, 'text');
       settings.svg.append(colon);
       colon.setAttributeNS(null, 'x', w / 2);
-      colon.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.77);
+      colon.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.79);
       colon.setAttributeNS(null, 'text-anchor', 'middle');
       colon.setAttributeNS(null, 'font-size', settings.scoreFontSize);
       colon.setAttributeNS(null, 'font-family', font);
@@ -194,10 +192,10 @@ function drawSvgElements() {
     startCountdown.setAttributeNS(null, 'x', w / 2);
     startCountdown.setAttributeNS(null, 'y', h / 2);
     startCountdown.setAttributeNS(null, 'text-anchor', 'middle');
-    startCountdown.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) * 2.5 + 'rem');
+    startCountdown.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) * 2 + 'rem');
+    startCountdown.setAttributeNS(null, 'letter-spacing', parseInt(settings.scoreFontSize) * 0.07 + 'rem');
     startCountdown.setAttributeNS(null, 'font-family', font);
     startCountdown.setAttributeNS(null, 'fill', 'rgb(255, 255, 255)');
-    startCountdown.textContent = settings.countdown;
   }
   drawStartCountdown()
   //Draw rackets
@@ -307,10 +305,10 @@ function startTimer(duration, fn) {
 function showScore(player, score) {
   const scorePlayer_1 = document.getElementById('score_1');
   const scorePlayer_2 = document.getElementById('score_2');
-  const winner = document.getElementById('counter');
+  const winner = document.getElementById('countdown');
   if (player === 'player1') {
     scorePlayer_1.textContent = score;
-    if (score >= 5) {
+    if (score >= 1) {
       winner.textContent = 'Player 1 Wins!';
       settings.isGameOver = true;
       gameSound(fanfareSound);
@@ -321,7 +319,7 @@ function showScore(player, score) {
     }
   } else if (player === 'player2') {
     scorePlayer_2.textContent = score;
-    if (score >= 5) {
+    if (score >= 1) {
       winner.textContent = 'Player 2 Wins!';
       settings.isGameOver = true;
       gameSound(fanfareSound);
@@ -345,7 +343,7 @@ function refreshGameplay() {
   document.getElementById('start_btn').addEventListener('click', startBtnHandler);
   document.getElementById('score_1').textContent = 0;
   document.getElementById('score_2').textContent = 0;
-  document.getElementById('counter').textContent = 'Press Start! to play a new game';
+  document.getElementById('countdown').textContent = 'Press Start! button';
   settings.isGameOver = !settings.isGameOver;
   settings.isCanBallMove = true;
   settings.ballCurrentPosition.currentPos_X = settings.ballPositionStart_X;
@@ -380,70 +378,92 @@ function keyUpHandler(e) {
 
 
 function moveBall() {
-//   const fieldTopPosY = settings.svg.getBoundingClientRect().top + settings.fieldMarginTop;
+  const fieldTopPosY = settings.svg.getBoundingClientRect().top + settings.fieldMarginTop;
+  if (settings.isCanBallMove) {
+    settings.ballCurrentPosition.currentPos_X += settings.ballActualSpeed_X;
+    // Checking if the ball hits the right racket
+    if (settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth - settings.racketWidth
+ /* / 2*/  && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y /* - settings.ballSize / 2 + settings.ballActualSpeed_Y  */> settings.racket_2.getBoundingClientRect().top
+ /* / 2*/  && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y /* - settings.ballSize / 2 + settings.ballActualSpeed_Y  */< settings.racket_2.getBoundingClientRect().bottom) {
+            settings.ballCurrentPosition.currentPos_X = settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X - settings.racketWidth;
+            settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+            gameSound(racketHitSound);
+      
+    } else if (settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth) { // Right racket misses
+        gameSound(missSound);
+        settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+        settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize + settings.ballActualSpeed_X;
+        settings.isCanBallMove = !settings.isCanBallMove;
+        settings.isCanRacketMove = !settings.isCanRacketMove;
+        settings.playerScoreCounter_1++;
+        showScore('player1', settings.playerScoreCounter_1);
+        startTimer(settings.startCountdown, restart);
+      }
 
-//   if (settings.isCanBallMove) {
-//     settings.ballCurrentPosition.currentPos_X += settings.ballActualSpeed_X;
-//     // Checking if the ball hits the right racket
-//     console.log(settings.ballCurrentPosition.currentPos_X)
-//     console.log(settings.ballSize)
-//     if (settings.ballCurrentPosition.currentPos_X + settings.ballSize > settings.svgWidth - settings.racketWidth
-//         && settings.ballCurrentPosition.currentPos_Y + settings.ballSize / 2 > settings.racket_2.getBoundingClientRect().top - fieldTopPosY
-//         && settings.ballCurrentPosition.currentPos_Y + settings.ballSize / 2 < settings.racket_2.getBoundingClientRect().bottom - fieldTopPosY) {
-//       settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-//       settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.racketWidth - settings.ballSize;
-//       gameSound(racketHitSound);
-//     } else if (settings.ballCurrentPosition.currentPos_X + settings.ballSize > settings.svgWidth) {
-//         gameSound(missSound);
-//         settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-//         settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize;
-//         settings.isCanBallMove = !settings.isCanBallMove;
-//         settings.isCanRacketMove = !settings.isCanRacketMove;
-//         settings.playerScoreCounter_1++;
-//         showScore('player1', settings.playerScoreCounter_1);
-//         startTimer(settings.startCountdown, restart);
-//       }
-//     // Checking if the ball hits the left racket
-//     if (settings.ballCurrentPosition.currentPos_X < settings.racketWidth
-//       && settings.ballCurrentPosition.currentPos_Y + settings.ballSize / 2 > settings.racket_1.getBoundingClientRect().top - fieldTopPosY
-//       && settings.ballCurrentPosition.currentPos_Y + settings.ballSize / 2 < settings.racket_1.getBoundingClientRect().bottom - fieldTopPosY) {
-//     settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-//     settings.ballCurrentPosition.currentPos_X = settings.racketWidth;
-//     gameSound(racketHitSound);
-//     } else if (settings.ballCurrentPosition.currentPos_X < 0) {
-//         gameSound(missSound);
-//         settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-//         settings.ballCurrentPosition.currentPos_X = 0;
-//         settings.isCanBallMove = !settings.isCanBallMove;
-//         settings.isCanRacketMove = !settings.isCanRacketMove;
-//         settings.playerScoreCounter_2++;
-//         showScore('player2', settings.playerScoreCounter_2);
-//         startTimer(settings.startCountdown, restart);  
-//       }
-//     settings.ballCurrentPosition.currentPos_Y += settings.ballActualSpeed_Y;
-//     // Checking if the ball is inside the bottom bound
-//     if (settings.ballCurrentPosition.currentPos_Y + settings.ballSize > settings.svgHeight - settings.fieldMarginTop) {
-//       settings.ballActualSpeed_Y = -settings.ballActualSpeed_Y;
-//       settings.ballCurrentPosition.currentPos_Y = settings.svgHeight - settings.fieldMarginTop - settings.ballSize;
-//       gameSound(wallHitSound);
-//     }
-//     // Checking if the ball is inside the top bound
-//     if (settings.ballCurrentPosition.currentPos_Y < 0) {
-//       settings.ballActualSpeed_Y = -settings.ballActualSpeed_Y;
-//       settings.ballCurrentPosition.currentPos_Y = 0;
-//       gameSound(wallHitSound);
-//     }
-//     settings.update();
-//     requestAnim(moveBall);
-//   }
+
+
+
+    // Checking if the ball hits the left racket
+    if (settings.ballCurrentPosition.currentPos_X - settings.ballSize - settings.ballActualSpeed_X < settings.racketWidth
+      && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop > settings.racket_1.getBoundingClientRect().top
+      && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop < settings.racket_1.getBoundingClientRect().bottom) {
+        
+        
+        settings.ballCurrentPosition.currentPos_X = settings.racketWidth + settings.ballSize;
+        
+        
+        
+        settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+        gameSound(racketHitSound);
+    } else if (settings.ballCurrentPosition.currentPos_X - settings.ballSize / 2 < 0) { // Left racket misses
+        gameSound(missSound);
+        settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+        settings.ballCurrentPosition.currentPos_X = 0;
+        settings.isCanBallMove = !settings.isCanBallMove;
+        settings.isCanRacketMove = !settings.isCanRacketMove;
+        settings.playerScoreCounter_2++;
+        showScore('player2', settings.playerScoreCounter_2);
+        startTimer(settings.startCountdown, restart);
+      }
+    settings.ballCurrentPosition.currentPos_Y += settings.ballActualSpeed_Y;
+    if (/* settings.svg.getBoundingClientRect().top +  */settings.ballCurrentPosition.currentPos_Y + settings.ballSize > /* settings.svg.getBoundingClientRect().top +  */settings.svgHeight) {
+      settings.ballCurrentPosition.currentPos_Y = settings.svgHeight - settings.ballSize;  
+      settings.ballActualSpeed_Y = -settings.ballActualSpeed_Y;
+      gameSound(wallHitSound);
+    }
+
+
+
+
+
+
+    // Checking if the ball is inside the top bound
+    if (settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.fieldMarginTop) {
+      settings.ballCurrentPosition.currentPos_Y = settings.fieldMarginTop + settings.ballSize;
+      settings.ballActualSpeed_Y = -settings.ballActualSpeed_Y;
+      gameSound(wallHitSound);
+    }
+    settings.updateBall();
+    requestAnim(moveBall);
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function moveLeftRacket() {
   if (settings.isUpPressedPlayer_1) {
       settings.racketPlayer1_actualPosY -= settings.racketSpeed;
       if (settings.racket_1.getBoundingClientRect().top - settings.racketSpeed <= settings.svgMarginTop + settings.fieldMarginTop) {
         settings.racketPlayer1_actualPosY = settings.fieldMarginTop;
-        console.log('up')
       }
       requestAnim(moveLeftRacket);
   } else if (settings.isDownPressedPlayer_1) {
@@ -479,5 +499,5 @@ function moveRightRacket() {
 
 
 document.getElementById('pong').addEventListener('click', function(e) {
-  console.log(e.clientX, e.clientY);
+  console.log(e.clientX - settings.svg.getBoundingClientRect().left, e.clientY);
 })
