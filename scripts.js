@@ -12,26 +12,13 @@ function Settings(svg) {
   this.svgWidth = 800;
   this.svgHeight = 700;
   this.fieldMarginTop = this.svgHeight * 0.2;
-  this.fieldColor = 'rgb(241, 210, 33)';
   this.racketWidth = this.svgWidth * 0.022;
   this.racketHeight = this.svgHeight * 0.21;
-  this.racketPlayer1_color = 'rgb(41, 173, 85)';
-  this.racketPlayer2_color = 'rgb(25, 0, 255)';
   this.racketInitialPos1_Y = this.fieldMarginTop + this.svgHeight * 0.07;
   this.racketInitialPos2_Y = this.fieldMarginTop + this.svgHeight * 0.73 - this.racketHeight;
   this.racketPlayer1_actualPosY = this.racketInitialPos1_Y;
   this.racketPlayer2_actualPosY = this.racketInitialPos2_Y;
-  this.scoreColor = 'rgba(33, 33, 33, 0.7)';
-  this.scoreFontSize = '2rem';
-  this.startBtnColor = 'rgb(255, 127, 80)';
   this.ballSize = ((this.svgWidth + this.svgHeight) / 2) * 0.022;
-  this.ballColor = 'rgb(255, 0, 0)';
-  // this.ballPositionStart_X = (this.svgWidth / 2) - this.ballSize / 2;
-  // this.ballPositionStart_Y = (this.svgHeight / 2) - this.ballSize / 2;
-  // this.ballCurrentPosition = {
-  //   currentPos_X: this.ballPositionStart_X,
-  //   currentPos_Y: this.ballPositionStart_Y,
-  // };
   this.racketSpeed = 8;
   this.startCountdown = 3;
   this.countdown = this.startCountdown;
@@ -106,7 +93,7 @@ function drawSvgElements() {
     startBtn.setAttributeNS(null, 'ry', settings.svgWidth * 0.015);
     startBtn.setAttributeNS(null, 'width', settings.svgWidth * 0.14);
     startBtn.setAttributeNS(null, 'height', settings.svgHeight * 0.065);
-    startBtn.setAttributeNS(null, 'fill', settings.startBtnColor);
+    startBtn.setAttributeNS(null, 'fill', 'rgb(255, 127, 80)');
     settings.svg.append(startBtn);
       const startBtnText = document.createElementNS(svgNS, 'text');
       settings.svg.append(startBtnText);
@@ -115,9 +102,9 @@ function drawSvgElements() {
       startBtnText.setAttributeNS(null, 'x', settings.svgWidth * 0.015 + (settings.svgWidth * 0.14 / 2));
       startBtnText.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.45);
       startBtnText.setAttributeNS(null, 'font-weight', 'bold');
-      startBtnText.setAttributeNS(null, 'letter-spacing', parseInt(settings.scoreFontSize) * 0.1 + 'rem');
+      startBtnText.setAttributeNS(null, 'letter-spacing', '0.2rem');
       startBtnText.setAttributeNS(null, 'text-anchor', 'middle');
-      startBtnText.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) / 2 + 'rem');
+      startBtnText.setAttributeNS(null, 'font-size', '1rem');
       startBtnText.setAttributeNS(null, 'font-family', font);
       startBtnText.setAttributeNS(null, 'fill', 'rgba(33, 33, 33, 0.7)');
       startBtnText.textContent = 'Start!';
@@ -127,9 +114,9 @@ function drawSvgElements() {
         alarmText.setAttributeNS(null, 'x', settings.svgWidth / 2);
         alarmText.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.1);
         alarmText.setAttributeNS(null, 'font-weight', 'bold');
-        alarmText.setAttributeNS(null, 'letter-spacing', parseInt(settings.scoreFontSize) * 0.1 + 'rem');
+        alarmText.setAttributeNS(null, 'letter-spacing', '0.2rem');
         alarmText.setAttributeNS(null, 'text-anchor', 'middle');
-        alarmText.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) / 2.5 + 'rem');
+        alarmText.setAttributeNS(null, 'font-size', '0.8rem');
         alarmText.setAttributeNS(null, 'font-family', font);
         alarmText.setAttributeNS(null, 'fill', 'rgb(255, 255, 255)');
         alarmText.textContent = 'Turn off the sound on the computer if it might interfere with you now.';
@@ -138,7 +125,6 @@ function drawSvgElements() {
   // Draw the score
   function drawScore() {
     const w = settings.svg.getAttributeNS(null, 'width');
-    // const h = settings.svg.getAttributeNS(null, 'height');
     const font = '"Orbitron", sans-serif';
     const score_1 = document.createElementNS(svgNS, 'text');
     settings.svg.append(score_1);
@@ -146,18 +132,18 @@ function drawSvgElements() {
     score_1.setAttributeNS(null, 'x', w / 2 - 30);
     score_1.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.8);
     score_1.setAttributeNS(null, 'text-anchor', 'middle');
-    score_1.setAttributeNS(null, 'font-size', settings.scoreFontSize);
+    score_1.setAttributeNS(null, 'font-size', '2rem');
     score_1.setAttributeNS(null, 'font-family', font);
-    score_1.setAttributeNS(null, 'fill', settings.racketPlayer1_color);
+    score_1.setAttributeNS(null, 'fill', 'rgb(41, 173, 85)');
     score_1.textContent = settings.playerScoreCounter_1;
       const colon = document.createElementNS(svgNS, 'text');
       settings.svg.append(colon);
       colon.setAttributeNS(null, 'x', w / 2);
       colon.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.79);
       colon.setAttributeNS(null, 'text-anchor', 'middle');
-      colon.setAttributeNS(null, 'font-size', settings.scoreFontSize);
+      colon.setAttributeNS(null, 'font-size', '2rem');
       colon.setAttributeNS(null, 'font-family', font);
-      colon.setAttributeNS(null, 'fill', settings.ballColor);
+      colon.setAttributeNS(null, 'fill', 'rgb(255, 0, 0)');
       colon.textContent = String.fromCharCode(58);
         const score_2 = document.createElementNS(svgNS, 'text');
         settings.svg.append(score_2);
@@ -165,9 +151,9 @@ function drawSvgElements() {
         score_2.setAttributeNS(null, 'x', w / 2 + 30);
         score_2.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.8);
         score_2.setAttributeNS(null, 'text-anchor', 'middle');
-        score_2.setAttributeNS(null, 'font-size', settings.scoreFontSize);
+        score_2.setAttributeNS(null, 'font-size', '2rem');
         score_2.setAttributeNS(null, 'font-family', font);
-        score_2.setAttributeNS(null, 'fill', settings.racketPlayer2_color);
+        score_2.setAttributeNS(null, 'fill', 'rgb(25, 0, 255)');
         score_2.textContent = settings.playerScoreCounter_2;
   }
   drawScore()
@@ -180,7 +166,7 @@ function drawSvgElements() {
     field.setAttributeNS(null, 'width', settings.svgWidth);
     field.setAttributeNS(null, 'height', settings.svgHeight - settings.fieldMarginTop);
     field.setAttributeNS(null, 'stroke', 'rgb(255, 255, 255)');
-    field.setAttributeNS(null, 'fill', settings.fieldColor);
+    field.setAttributeNS(null, 'fill', 'rgb(241, 210, 33)');
     settings.svg.append(field);
   }
   drawField()
@@ -194,12 +180,12 @@ function drawSvgElements() {
       racket.setAttributeNS(null, 'id', 'racket_1');
       racket.setAttributeNS(null, 'x', 0);
       racket.setAttributeNS(null, 'y', settings.racketInitialPos1_Y);
-      racket.setAttributeNS(null, 'fill', settings.racketPlayer1_color);
+      racket.setAttributeNS(null, 'fill', 'rgb(41, 173, 85)');
     } else if (player === 'player_2') {
       racket.setAttributeNS(null, 'id', 'racket_2');
       racket.setAttributeNS(null, 'x', w - settings.racketWidth);
       racket.setAttributeNS(null, 'y', settings.racketInitialPos2_Y);
-      racket.setAttributeNS(null, 'fill', settings.racketPlayer2_color);
+      racket.setAttributeNS(null, 'fill', 'rgb(25, 0, 255)');
     }
     racket.setAttributeNS(null, 'width', settings.racketWidth);
     racket.setAttributeNS(null, 'height', settings.racketHeight);
@@ -217,7 +203,7 @@ function drawSvgElements() {
     ball.setAttributeNS(null, 'cx', w / 2);
     ball.setAttributeNS(null, 'cy', h / 2 + settings.fieldMarginTop);
     ball.setAttributeNS(null, 'r', settings.ballSize);
-    ball.setAttributeNS(null, 'fill', settings.ballColor);
+    ball.setAttributeNS(null, 'fill', 'rgb(255, 0, 0)');
     settings.svg.append(ball);
   }
   drawBall()
@@ -234,8 +220,8 @@ function drawSvgElements() {
     startCountdown.setAttributeNS(null, 'x', w / 2);
     startCountdown.setAttributeNS(null, 'y', startCoundownPos_Y);
     startCountdown.setAttributeNS(null, 'text-anchor', 'middle');
-    startCountdown.setAttributeNS(null, 'font-size', parseInt(settings.scoreFontSize) * 2 + 'rem');
-    startCountdown.setAttributeNS(null, 'letter-spacing', parseInt(settings.scoreFontSize) * 0.07 + 'rem');
+    startCountdown.setAttributeNS(null, 'font-size', '4rem');
+    startCountdown.setAttributeNS(null, 'letter-spacing', '0.14rem');
     startCountdown.setAttributeNS(null, 'font-family', font);
     startCountdown.setAttributeNS(null, 'fill', 'rgb(255, 255, 255)');
   }
