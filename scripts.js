@@ -35,8 +35,8 @@ function Settings(svg) {
   this.racketSpeed = 8;
   this.startCountdown = 3;
   this.countdown = this.startCountdown;
-  this.ballSpeed_X = 3//randomBallDirection_X(7);//7
-  this.ballSpeed_Y = 0//randomBallDirection_Y(-4, 4);
+  this.ballSpeed_X = randomBallDirection_X(7);
+  this.ballSpeed_Y = randomBallDirection_Y(-4, 4);
   this.ballActualSpeed_X = this.ballSpeed_X;
   this.ballActualSpeed_Y = this.ballSpeed_Y;
   this.playerScoreCounter_1 = 0;
@@ -55,7 +55,7 @@ function Settings(svg) {
     this.racket_1 = document.getElementById('racket_1');
     this.racket_2 = document.getElementById('racket_2');
     this.ballPositionStart_X = this.svg.getBoundingClientRect().left + (this.svgWidth / 2);
-    this.ballPositionStart_Y = this.svg.getBoundingClientRect().top + this.fieldMarginTop + (this.svgHeight - this.fieldMarginTop) / 2;
+    this.ballPositionStart_Y = this.svgMarginTop + this.fieldMarginTop + (this.svgHeight - this.fieldMarginTop) / 2;
     this.ballCurrentPosition = {
       currentPos_X: this.ballPositionStart_X,
       currentPos_Y: this.ballPositionStart_Y,
@@ -78,7 +78,10 @@ function randomBallDirection_X(ballSpeed_X) {
   return ballSpeed_X * direction_X;
 }
 function randomBallDirection_Y(min, max) {
-  return Math.round(min - 0.5 + Math.random() * (max - min + 1));
+  const randomDirection_Y = Math.round(min - 0.5 + Math.random() * (max - min + 1))
+  if (randomDirection_Y >= 1 || randomDirection_Y <= -1) {
+    return randomDirection_Y;
+  } else return randomBallDirection_X(3);
 }
 
 function createSvg() {
@@ -239,10 +242,6 @@ function drawSvgElements() {
 }
 window.onload = drawSvgElements();
 
-
-
-
-
 const curryHandler = function(duration, fn) {
   return () => startTimer(duration, fn);
 }; 
@@ -373,52 +372,41 @@ function keyUpHandler(e) {
   }
 }
 
-
-
-
-
 function moveBall() {
-  const fieldTopPosY = settings.svg.getBoundingClientRect().top + settings.fieldMarginTop;
+  const fieldTopPosY = settings.svgMarginTop + settings.fieldMarginTop;
   if (settings.isCanBallMove) {
     settings.ballCurrentPosition.currentPos_X += settings.ballActualSpeed_X;
     // Checking if the ball hits the right racket
-    if (settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth - settings.racketWidth
- /* / 2*/  && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y /* - settings.ballSize / 2 + settings.ballActualSpeed_Y  */> settings.racket_2.getBoundingClientRect().top
- /* / 2*/  && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y /* - settings.ballSize / 2 + settings.ballActualSpeed_Y  */< settings.racket_2.getBoundingClientRect().bottom) {
-            settings.ballCurrentPosition.currentPos_X = settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X - settings.racketWidth;
-            settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-            gameSound(racketHitSound);
-      
+    if ((settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth - settings.racketWidth
+            && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y > settings.racketPlayer2_actualPosY + settings.svgMarginTop)
+        && (settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth - settings.racketWidth
+            && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.racketPlayer2_actualPosY + settings.svgMarginTop + settings.racketHeight)) {
+        settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize  - settings.racketWidth;
+        settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+        gameSound(racketHitSound);
     } else if (settings.ballCurrentPosition.currentPos_X + settings.ballSize - settings.ballActualSpeed_X > settings.svgWidth) { // Right racket misses
         gameSound(missSound);
         settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-        settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize + settings.ballActualSpeed_X;
+        settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize;
         settings.isCanBallMove = !settings.isCanBallMove;
         settings.isCanRacketMove = !settings.isCanRacketMove;
         settings.playerScoreCounter_1++;
         showScore('player1', settings.playerScoreCounter_1);
         startTimer(settings.startCountdown, restart);
-      }
-
-
-
-
+      }  
     // Checking if the ball hits the left racket
-    if (settings.ballCurrentPosition.currentPos_X - settings.ballSize - settings.ballActualSpeed_X < settings.racketWidth
-      && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop > settings.racket_1.getBoundingClientRect().top
-      && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop < settings.racket_1.getBoundingClientRect().bottom) {
-        
-        
-        settings.ballCurrentPosition.currentPos_X = settings.racketWidth + settings.ballSize;
-        
-        
-        
-        settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+    if ((settings.ballCurrentPosition.currentPos_X - settings.ballSize + Math.abs(settings.ballActualSpeed_X) < settings.racketWidth
+            && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop > settings.racketPlayer1_actualPosY + settings.svgMarginTop)
+        && (settings.ballCurrentPosition.currentPos_X - settings.ballSize + Math.abs(settings.ballActualSpeed_X) < settings.racketWidth
+            && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop - settings.ballSize < settings.racketPlayer1_actualPosY + settings.svgMarginTop + settings.racketHeight)) {
+              settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
+        settings.ballCurrentPosition.currentPos_X = settings.racketWidth + settings.ballSize + settings.ballActualSpeed_X;
         gameSound(racketHitSound);
-    } else if (settings.ballCurrentPosition.currentPos_X - settings.ballSize / 2 < 0) { // Left racket misses
+    }
+     else if (settings.ballCurrentPosition.currentPos_X - settings.ballSize < 0) { // Left racket misses
         gameSound(missSound);
         settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-        settings.ballCurrentPosition.currentPos_X = 0;
+        settings.ballCurrentPosition.currentPos_X = settings.ballSize;
         settings.isCanBallMove = !settings.isCanBallMove;
         settings.isCanRacketMove = !settings.isCanRacketMove;
         settings.playerScoreCounter_2++;
@@ -426,17 +414,12 @@ function moveBall() {
         startTimer(settings.startCountdown, restart);
       }
     settings.ballCurrentPosition.currentPos_Y += settings.ballActualSpeed_Y;
-    if (/* settings.svg.getBoundingClientRect().top +  */settings.ballCurrentPosition.currentPos_Y + settings.ballSize > /* settings.svg.getBoundingClientRect().top +  */settings.svgHeight) {
+    // Checking if the ball is inside the bottom bound
+    if (settings.ballCurrentPosition.currentPos_Y + settings.ballSize > settings.svgHeight) {
       settings.ballCurrentPosition.currentPos_Y = settings.svgHeight - settings.ballSize;  
       settings.ballActualSpeed_Y = -settings.ballActualSpeed_Y;
       gameSound(wallHitSound);
     }
-
-
-
-
-
-
     // Checking if the ball is inside the top bound
     if (settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.fieldMarginTop) {
       settings.ballCurrentPosition.currentPos_Y = settings.fieldMarginTop + settings.ballSize;
@@ -448,27 +431,16 @@ function moveBall() {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 function moveLeftRacket() {
   if (settings.isUpPressedPlayer_1) {
       settings.racketPlayer1_actualPosY -= settings.racketSpeed;
-      if (settings.racket_1.getBoundingClientRect().top - settings.racketSpeed <= settings.svgMarginTop + settings.fieldMarginTop) {
+      if (settings.racketPlayer1_actualPosY - settings.racketSpeed <= settings.fieldMarginTop) {
         settings.racketPlayer1_actualPosY = settings.fieldMarginTop;
       }
       requestAnim(moveLeftRacket);
   } else if (settings.isDownPressedPlayer_1) {
       settings.racketPlayer1_actualPosY += settings.racketSpeed;
-      if (settings.racket_1.getBoundingClientRect().bottom >= settings.svgMarginTop + settings.svgHeight) {
+      if (settings.racketPlayer1_actualPosY + settings.racketHeight >= settings.svgHeight) {
         settings.racketPlayer1_actualPosY = settings.svgHeight - settings.racketHeight;
       } 
       requestAnim(moveLeftRacket);
@@ -479,24 +451,19 @@ function moveLeftRacket() {
 function moveRightRacket() {
   if (settings.isUpPressedPlayer_2) {
     settings.racketPlayer2_actualPosY -= settings.racketSpeed;
-      if (settings.racket_2.getBoundingClientRect().top - settings.racketSpeed <= settings.svgMarginTop + settings.fieldMarginTop) {
+      if (settings.racketPlayer2_actualPosY - settings.racketSpeed <= settings.fieldMarginTop) {
         settings.racketPlayer2_actualPosY = settings.fieldMarginTop;
       }
     requestAnim(moveRightRacket);
   } else if (settings.isDownPressedPlayer_2) {
     settings.racketPlayer2_actualPosY += settings.racketSpeed;
-    if (settings.racket_2.getBoundingClientRect().bottom >= settings.svgMarginTop + settings.svgHeight) {
+    if (settings.racketPlayer2_actualPosY + settings.racketHeight >= settings.svgHeight) {
       settings.racketPlayer2_actualPosY = settings.svgHeight - settings.racketHeight;
     } 
     requestAnim(moveRightRacket);
   }
   settings.update_2();
 }
-
-
-
-
-
 
 document.getElementById('pong').addEventListener('click', function(e) {
   console.log(e.clientX - settings.svg.getBoundingClientRect().left, e.clientY);
