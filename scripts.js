@@ -6,19 +6,21 @@ let requestAnim = window.requestAnimationFrame ||
                   window.oRequestAnimationFrame ||
                   window.msRequestAnimationFrame ||
                   function(callback) { window.setTimeout(callback, 1000 / 60); }
+let requestAnimMoveLeftRacket = null;
+let requestAnimMoveRightRacket = null;
 
 function Settings(svg) {
   this.svg = svg;
   this.svgWidth = 800;
   this.svgHeight = 700;
   this.fieldMarginTop = this.svgHeight * 0.2;
-  this.racketWidth = this.svgWidth * 0.022;
-  this.racketHeight = this.svgHeight * 0.21;
-  this.racketInitialPos1_Y = this.fieldMarginTop + this.svgHeight * 0.07;
-  this.racketInitialPos2_Y = this.fieldMarginTop + this.svgHeight * 0.73 - this.racketHeight;
+  this.racketWidth = Math.floor(this.svgWidth * 0.022);
+  this.racketHeight = Math.floor(this.svgHeight * 0.21);
+  this.racketInitialPos1_Y = Math.floor(this.fieldMarginTop + this.svgHeight * 0.07);
+  this.racketInitialPos2_Y = Math.floor(this.fieldMarginTop + this.svgHeight * 0.73 - this.racketHeight);
   this.racketPlayer1_actualPosY = this.racketInitialPos1_Y;
   this.racketPlayer2_actualPosY = this.racketInitialPos2_Y;
-  this.ballSize = ((this.svgWidth + this.svgHeight) / 2) * 0.022;
+  this.ballSize = Math.floor(((this.svgWidth + this.svgHeight) / 2) * 0.022);
   this.racketSpeed = 8;
   this.startCountdown = 3;
   this.countdown = this.startCountdown;
@@ -37,12 +39,11 @@ function Settings(svg) {
   this.isGameOver = false;
   this.isInitialStart = true;
   this.init = function() {
-    this.svgMarginTop = this.svg.getBoundingClientRect().top;
     this.ball = document.getElementById('ball');
     this.racket_1 = document.getElementById('racket_1');
     this.racket_2 = document.getElementById('racket_2');
     this.ballPositionStart_X = this.svgWidth / 2;
-    this.ballPositionStart_Y = (this.svgHeight - this.fieldMarginTop) / 2 + this.svgMarginTop;
+    this.ballPositionStart_Y = (this.svgHeight - this.fieldMarginTop) / 2 + this.fieldMarginTop;
     this.ballCurrentPosition = {
       currentPos_X: this.ballPositionStart_X,
       currentPos_Y: this.ballPositionStart_Y,
@@ -59,6 +60,7 @@ function Settings(svg) {
     this.racket_2.setAttributeNS(null, 'y', this.racketPlayer2_actualPosY);
   };
 }
+
 function randomBallDirection_X(ballSpeed_X) {
   const randomNumber = Math.round(Math.random() * ballSpeed_X);
   const direction_X = randomNumber % 2 === 0 ? -1 : 1;
@@ -69,7 +71,7 @@ function randomBallDirection_Y(min, max) {
   if (randomDirection_Y >= 1 || randomDirection_Y <= -1) {
     return randomDirection_Y;
   } else return randomBallDirection_X(3);
-}
+  }
 
 function createSvg() {
   const svg = document.createElementNS(svgNS, 'svg');
@@ -86,7 +88,7 @@ function drawSvgElements() {
   // Draw controls
   function drawControls() {
     const startBtn = document.createElementNS(svgNS, 'rect');
-    startBtn.setAttributeNS(null, 'id', 'start_btn');
+    startBtn.setAttributeNS(null, 'id', 'start-btn');
     startBtn.setAttributeNS(null, 'x', settings.svgWidth * 0.015);
     startBtn.setAttributeNS(null, 'y', settings.fieldMarginTop * 0.25);
     startBtn.setAttributeNS(null, 'rx', settings.svgWidth * 0.015);
@@ -157,7 +159,7 @@ function drawSvgElements() {
         score_2.textContent = settings.playerScoreCounter_2;
   }
   drawScore()
-   //Draw field
+  //Draw field
   function drawField() {
     const field = document.createElementNS(svgNS, 'rect');
     field.setAttributeNS(null, 'id', 'field');
@@ -196,23 +198,23 @@ function drawSvgElements() {
   // Draw the ball
   function drawBall() {
     const field = document.getElementById('field');
-    const w = field.getAttributeNS(null, 'width');
-    const h = field.getAttributeNS(null, 'height');
+    const fieldWidth = field.getAttributeNS(null, 'width');
+    const fieldHeight = field.getAttributeNS(null, 'height');
     const ball = document.createElementNS(svgNS, 'circle');
     ball.setAttributeNS(null, 'id', 'ball');
-    ball.setAttributeNS(null, 'cx', w / 2);
-    ball.setAttributeNS(null, 'cy', h / 2 + settings.fieldMarginTop);
+    ball.setAttributeNS(null, 'cx', fieldWidth / 2);
+    ball.setAttributeNS(null, 'cy', fieldHeight / 2 + settings.fieldMarginTop);
     ball.setAttributeNS(null, 'r', settings.ballSize);
     ball.setAttributeNS(null, 'fill', 'rgb(255, 0, 0)');
     settings.svg.append(ball);
   }
-  drawBall()
+  drawBall();
   //Draw start countdown
   function drawStartCountdown() {
     const w = settings.svg.getAttributeNS(null, 'width');
     const field = document.getElementById('field');
     const fieldHeight = field.getAttributeNS(null, 'height');
-    const startCoundownPos_Y = settings.svg.getBoundingClientRect().top + fieldHeight / 2 + settings.ballSize * 1.5;
+    const startCoundownPos_Y = fieldHeight / 2 + settings.ballSize * 1.2 + settings.fieldMarginTop;
     const font = '"Orbitron", sans-serif';
     const startCountdown = document.createElementNS(svgNS, 'text');
     settings.svg.append(startCountdown);
@@ -220,12 +222,12 @@ function drawSvgElements() {
     startCountdown.setAttributeNS(null, 'x', w / 2);
     startCountdown.setAttributeNS(null, 'y', startCoundownPos_Y);
     startCountdown.setAttributeNS(null, 'text-anchor', 'middle');
-    startCountdown.setAttributeNS(null, 'font-size', '4rem');
+    startCountdown.setAttributeNS(null, 'font-size', '3.5rem');
     startCountdown.setAttributeNS(null, 'letter-spacing', '0.14rem');
     startCountdown.setAttributeNS(null, 'font-family', font);
     startCountdown.setAttributeNS(null, 'fill', 'rgb(255, 255, 255)');
   }
-  drawStartCountdown()
+  drawStartCountdown();
   settings.init();
 }
 window.onload = drawSvgElements();
@@ -234,7 +236,7 @@ const curryHandler = function(duration, fn) {
   return () => startTimer(duration, fn);
 }; 
 const startBtnHandler = curryHandler(settings.startCountdown, startGame);
-document.getElementById('start_btn').addEventListener('click', startBtnHandler);
+document.getElementById('start-btn').addEventListener('click', startBtnHandler);
 
 document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
@@ -262,12 +264,12 @@ function startGame() {
   settings.playerScoreCounter_1 = 0;
   settings.playerScoreCounter_2 = 0;
   settings.isCanRacketMove = true;
-  moveBall(); // window.requestAnimationFrame(moveBall);
+  moveBall();
 }
 
 function startTimer(duration, fn) {
   // gameSoundInit(countdownSound, startGameSound, wallHitSound, racketHitSound, missSound, fanfareSound);
-  document.getElementById('start_btn').removeEventListener('click', startBtnHandler);
+  document.getElementById('start-btn').removeEventListener('click', startBtnHandler);
   if (!settings.isGameOver) {
     const startCountdown = document.getElementById('countdown');                            
     let timer = duration;
@@ -327,7 +329,7 @@ function restart() {
 }
 
 function refreshGameplay() {
-  document.getElementById('start_btn').addEventListener('click', startBtnHandler);
+  document.getElementById('start-btn').addEventListener('click', startBtnHandler);
   document.getElementById('score_1').textContent = 0;
   document.getElementById('score_2').textContent = 0;
   document.getElementById('countdown').textContent = 'Press Start! button';
@@ -361,14 +363,13 @@ function keyUpHandler(e) {
 }
 
 function moveBall() {
-  const fieldTopPosY = settings.svgMarginTop + settings.fieldMarginTop;
   if (settings.isCanBallMove) {
     settings.ballCurrentPosition.currentPos_X += settings.ballActualSpeed_X;
     // Checking if the ball hits the right racket
     if ((settings.ballCurrentPosition.currentPos_X + settings.ballSize > settings.svgWidth - settings.racketWidth
-            && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y > settings.racketPlayer2_actualPosY + settings.svgMarginTop)
+            && settings.ballCurrentPosition.currentPos_Y > settings.racketPlayer2_actualPosY)
         && (settings.ballCurrentPosition.currentPos_X + settings.ballSize > settings.svgWidth - settings.racketWidth
-            && settings.fieldMarginTop + settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.racketPlayer2_actualPosY + settings.svgMarginTop + settings.racketHeight)) {
+            && settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.racketPlayer2_actualPosY + settings.racketHeight)) {
         settings.ballCurrentPosition.currentPos_X = settings.svgWidth - settings.ballSize - settings.racketWidth;
         settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
         gameSound(racketHitSound);
@@ -379,16 +380,18 @@ function moveBall() {
         settings.isCanBallMove = !settings.isCanBallMove;
         settings.isCanRacketMove = !settings.isCanRacketMove;
         settings.playerScoreCounter_1++;
+        cancelAnimationFrame(requestAnimMoveLeftRacket);
+        cancelAnimationFrame(requestAnimMoveRightRacket);
         showScore('player1', settings.playerScoreCounter_1);
         startTimer(settings.startCountdown, restart);
       }  
     // Checking if the ball hits the left racket
-    if ((settings.ballCurrentPosition.currentPos_X - settings.ballSize + Math.abs(settings.ballActualSpeed_X) / 2 < settings.racketWidth
-            && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop > settings.racketPlayer1_actualPosY + settings.svgMarginTop)
-        && (settings.ballCurrentPosition.currentPos_X - settings.ballSize + Math.abs(settings.ballActualSpeed_X) / 2 < settings.racketWidth
-            && settings.ballCurrentPosition.currentPos_Y + settings.fieldMarginTop - settings.ballSize < settings.racketPlayer1_actualPosY + settings.svgMarginTop + settings.racketHeight)) {
+    if ((settings.ballCurrentPosition.currentPos_X - settings.ballSize < settings.racketWidth
+            && settings.ballCurrentPosition.currentPos_Y > settings.racketPlayer1_actualPosY)
+        && (settings.ballCurrentPosition.currentPos_X - settings.ballSize < settings.racketWidth
+            && settings.ballCurrentPosition.currentPos_Y - settings.ballSize < settings.racketPlayer1_actualPosY + settings.racketHeight)) {
               settings.ballActualSpeed_X = -settings.ballActualSpeed_X;
-        settings.ballCurrentPosition.currentPos_X = settings.racketWidth + settings.ballSize + settings.ballActualSpeed_X;
+        settings.ballCurrentPosition.currentPos_X = settings.racketWidth + settings.ballSize;
         gameSound(racketHitSound);
     } else if (settings.ballCurrentPosition.currentPos_X - settings.ballSize < 0) { // Left racket misses
         gameSound(missSound);
@@ -397,6 +400,8 @@ function moveBall() {
         settings.isCanBallMove = !settings.isCanBallMove;
         settings.isCanRacketMove = !settings.isCanRacketMove;
         settings.playerScoreCounter_2++;
+        cancelAnimationFrame(requestAnimMoveLeftRacket);
+        cancelAnimationFrame(requestAnimMoveRightRacket);
         showScore('player2', settings.playerScoreCounter_2);
         startTimer(settings.startCountdown, restart);
       }
@@ -424,13 +429,13 @@ function moveLeftRacket() {
       if (settings.racketPlayer1_actualPosY - settings.racketSpeed <= settings.fieldMarginTop) {
         settings.racketPlayer1_actualPosY = settings.fieldMarginTop;
       }
-      requestAnim(moveLeftRacket);
+      requestAnimMoveLeftRacket = requestAnim(moveLeftRacket);
   } else if (settings.isDownPressedPlayer_1) {
       settings.racketPlayer1_actualPosY += settings.racketSpeed;
       if (settings.racketPlayer1_actualPosY + settings.racketHeight >= settings.svgHeight) {
         settings.racketPlayer1_actualPosY = settings.svgHeight - settings.racketHeight;
       } 
-      requestAnim(moveLeftRacket);
+      requestAnimMoveLeftRacket = requestAnim(moveLeftRacket);
   }
   settings.update_1();
 }
@@ -441,17 +446,13 @@ function moveRightRacket() {
       if (settings.racketPlayer2_actualPosY - settings.racketSpeed <= settings.fieldMarginTop) {
         settings.racketPlayer2_actualPosY = settings.fieldMarginTop;
       }
-    requestAnim(moveRightRacket);
+      requestAnimMoveRightRacket = requestAnim(moveRightRacket);
   } else if (settings.isDownPressedPlayer_2) {
     settings.racketPlayer2_actualPosY += settings.racketSpeed;
     if (settings.racketPlayer2_actualPosY + settings.racketHeight >= settings.svgHeight) {
       settings.racketPlayer2_actualPosY = settings.svgHeight - settings.racketHeight;
     } 
-    requestAnim(moveRightRacket);
+    requestAnimMoveRightRacket = requestAnim(moveRightRacket);
   }
   settings.update_2();
 }
-
-document.getElementById('pong').addEventListener('click', function(e) {
-  console.log(e.clientX - settings.svg.getBoundingClientRect().left, e.clientY);
-})
