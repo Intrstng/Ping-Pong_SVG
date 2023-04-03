@@ -53,10 +53,10 @@ function Settings(svg) {
     this.ball.setAttributeNS(null, 'cx', this.ballCurrentPosition.currentPos_X);
     this.ball.setAttributeNS(null, 'cy', this.ballCurrentPosition.currentPos_Y);
   }
-  this.update_1 = function() {
+  this.updateRacketLeft = function() {
     this.racket_1.setAttributeNS(null, 'y', this.racketPlayer1_actualPosY);
   };
-  this.update_2 = function() {
+  this.updateRacketRight = function() {
     this.racket_2.setAttributeNS(null, 'y', this.racketPlayer2_actualPosY);
   };
 }
@@ -237,7 +237,6 @@ const curryHandler = function(duration, fn) {
 }; 
 const startBtnHandler = curryHandler(settings.startCountdown, startGame);
 document.getElementById('start-btn').addEventListener('click', startBtnHandler);
-
 document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
 
@@ -437,7 +436,7 @@ function moveLeftRacket() {
       } 
       requestAnimMoveLeftRacket = requestAnim(moveLeftRacket);
   }
-  settings.update_1();
+  settings.updateRacketLeft();
 }
 
 function moveRightRacket() {
@@ -454,5 +453,5 @@ function moveRightRacket() {
     } 
     requestAnimMoveRightRacket = requestAnim(moveRightRacket);
   }
-  settings.update_2();
+  settings.updateRacketRight();
 }
